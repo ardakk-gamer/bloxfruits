@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox Fruits Cooldown Tracker</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --trade-color: #a855f7;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            color: var(--accent-color);
+        }
+
+        .trade-card h1 {
+            color: var(--trade-color);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--text-color);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .trade-card button {
+            background-color: var(--trade-color);
+            color: #fff;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: transparent !important;
+            color: var(--text-muted) !important;
+            border: 1px solid var(--text-muted);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <!-- Gacha Card -->
+        <div class="container">
+            <h1>🍋 Gacha Cooldown</h1>
+            <p class="subtitle">Standart 4 saatlik meyve çekme süresi</p>
+            
+            <div id="gachaTimer" class="timer-display">04:00:00</div>
+
+            <div class="btn-group">
+                <button onclick="startTimer('gacha', 4 * 3600)">Başlat (4 Saat)</button>
+                <button class="btn-secondary" onclick="startTimer('gacha', 5)">Test (5 Sn)</button>
+            </div>
+        </div>
+
+        <!-- Trade Card -->
+        <div class="container trade-card">
+            <h1>🔄 Trade Cooldown</h1>
+            <p class="subtitle">Günlük takas limiti / süresi</p>
+            
+            <div id="tradeTimer" class="timer-display">08:00:00</div>
+
+            <div class="btn-group">
+                <button onclick="startTimer('trade', 8 * 3600)">Başlat (8 Saat)</button>
+                <button class="btn-secondary" onclick="startTimer('trade', 5)">Test (5 Sn)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timers = {
+            gacha: { interval: null, timeLeft: 0 },
+            trade: { interval: null, timeLeft: 0 }
+        };
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        function updateDisplay(type) {
+            let totalSeconds = timers[type].timeLeft;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            document.getElementById(type + 'Timer').innerText = 
+                String(hours).padStart(2, '0') + ":" +
+                String(minutes).padStart(2, '0') + ":" +
+                String(seconds).padStart(2, '0');
+        }
+
+        function startTimer(type, seconds) {
+            clearInterval(timers[type].interval);
+            timers[type].timeLeft = seconds;
+            updateDisplay(type);
+
+            timers[type].interval = setInterval(() => {
+                if (timers[type].timeLeft > 0) {
+                    timers[type].timeLeft--;
+                    updateDisplay(type);
+                } else {
+                    clearInterval(timers[type].interval);
+                    let title = type === 'gacha' ? "🍋 Gacha Vakti!" : "🔄 Trade Vakti!";
+                    let msg = type === 'gacha' ? "Süre doldu, hemen gacha aç!" : "Takas süren sıfırlandı, işlem yapabilirsin!";
+                    
+                    alert(title + " " + msg);
+                    if (Notification.permission === "granted") {
+                        new Notification(title, { body: msg });
+                    }
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
