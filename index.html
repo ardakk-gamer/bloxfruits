@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blox Fruits Cooldown Tracker</title>
+    <title>Blox Fruits Tracker & Trade Calculator</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #38bdf8;
-            --trade-color: #a855f7;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #f43f5e;
-            --success: #10b981;
+            --bg-color: #12121c;
+            --card-bg: rgba(30, 30, 46, 0.75);
+            --accent-color: #89b4fa;
+            --trade-color: #f9e2af;
+            --text-color: #cdd6f4;
+            --text-muted: #a6adc8;
+            --danger: #f38ba8;
+            --success: #a6e3a1;
         }
 
         body {
@@ -25,7 +25,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-y: auto;
+            flex-direction: column;
+            padding: 20px;
         }
 
         .wrapper {
@@ -33,164 +34,271 @@
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            padding: 20px;
+            width: 100%;
+            max-width: 900px;
         }
 
         .container {
             background-color: var(--card-bg);
             padding: 2rem;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             text-align: center;
-            width: 320px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex: 1;
+            min-width: 300px;
         }
 
-        h1 {
-            font-size: 1.3rem;
-            margin-bottom: 0.3rem;
-            color: var(--accent-color);
+        .calc-card {
+            width: 100%;
+            max-width: 700px;
+            margin-top: 20px;
         }
 
-        .trade-card h1 {
-            color: var(--trade-color);
-        }
-
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 1.5rem;
-        }
+        h1 { font-size: 1.3rem; margin-bottom: 0.3rem; color: var(--accent-color); }
+        .calc-card h1 { color: var(--trade-color); }
+        
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
 
         .timer-display {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: bold;
             font-family: monospace;
             margin-bottom: 1.5rem;
-            letter-spacing: 2px;
             color: var(--text-color);
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(15, 15, 25, 0.9);
             padding: 0.8rem;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .btn-group {
+        .trade-grid {
             display: flex;
-            gap: 10px;
+            gap: 20px;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .side {
+            flex: 1;
+            display: flex;
             flex-direction: column;
+            gap: 10px;
+            background: rgba(15, 15, 25, 0.5);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .side h3 { margin: 0 0 5px 0; font-size: 0.95rem; color: var(--text-muted); }
+
+        select {
+            background-color: rgba(20, 20, 30, 0.6);
+            color: #fab387;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            font-family: 'Consolas', monospace;
+            width: 100%;
         }
 
         button {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            border: none;
+            background-color: rgba(137, 180, 250, 0.2);
+            color: var(--accent-color);
+            border: 1px solid rgba(137, 180, 250, 0.4);
             padding: 10px;
             font-size: 0.95rem;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
+            width: 100%;
+            transition: background 0.2s;
         }
+        
+        button:hover { background-color: rgba(137, 180, 250, 0.3); }
 
-        .trade-card button {
-            background-color: var(--trade-color);
-            color: #fff;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background-color: transparent !important;
-            color: var(--text-muted) !important;
-            border: 1px solid var(--text-muted);
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-color) !important;
+        .output-box {
+            background-color: rgba(15, 15, 25, 0.9);
+            color: var(--trade-color);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: left;
+            white-space: pre-line;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <!-- Gacha Card -->
+        <!-- Gacha Cooldown Card -->
         <div class="container">
-            <h1>🍋 Gacha Cooldown</h1>
-            <p class="subtitle">Standart 4 saatlik meyve çekme süresi</p>
-            
+            <h1>🎰 Gacha Cooldown</h1>
+            <p class="subtitle">4 Saatlik Standart Gacha Süresi</p>
             <div id="gachaTimer" class="timer-display">04:00:00</div>
-
-            <div class="btn-group">
-                <button onclick="startTimer('gacha', 4 * 3600)">Başlat (4 Saat)</button>
-                <button class="btn-secondary" onclick="startTimer('gacha', 5)">Test (5 Sn)</button>
-            </div>
+            <button onclick="startTimer('gacha', 4 * 3600)">Başlat (4 Saat)</button>
         </div>
 
-        <!-- Trade Card -->
-        <div class="container trade-card">
-            <h1>🔄 Trade Cooldown</h1>
-            <p class="subtitle">Günlük takas limiti / süresi</p>
-            
-            <div id="tradeTimer" class="timer-display">08:00:00</div>
-
-            <div class="btn-group">
-                <button onclick="startTimer('trade', 8 * 3600)">Başlat (8 Saat)</button>
-                <button class="btn-secondary" onclick="startTimer('trade', 5)">Test (5 Sn)</button>
-            </div>
+        <!-- Trade Cooldown Card -->
+        <div class="container">
+            <h1 style="color: #f9e2af;">⏱️ Raid / Cooldown</h1>
+            <p class="subtitle">Genel Sayaç Paneli</p>
+            <div id="tradeTimer" class="timer-display">00:05:00</div>
+            <button onclick="startTimer('trade', 300)" style="background-color: rgba(249, 242, 175, 0.2); color: var(--trade-color); border-color: rgba(249, 242, 175, 0.4);">Başlat (5 Dk Raid)</button>
         </div>
     </div>
 
+    <!-- Trade Calculator (Python Logic Match) -->
+    <div class="container calc-card">
+        <h1>⚓ Blox Fruits Full Database & %40 Sınır Kontrolcüsü</h1>
+        <p class="subtitle">Python PyQt backend mantığıyla birebir uyumlu trade analizi</p>
+        
+        <div class="trade-grid">
+            <!-- Senin Tarafın -->
+            <div class="side">
+                <h3>Senin Verdiğin Öğe / Meyve:</h3>
+                <select id="myFruit" onchange="calculateTrade()"></select>
+            </div>
+            
+            <!-- Karşının Tarafı -->
+            <div class="side">
+                <h3>Karşı Tarafın Verdiği Öğe / Meyve:</h3>
+                <select id="targetFruit" onchange="calculateTrade()"></select>
+            </div>
+        </div>
+
+        <div style="text-align: left; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Takas ve Kademe Analizi:</div>
+        <div id="calc-output" class="output-box">Yükleniyor...</div>
+    </div>
+
     <script>
-        let timers = {
-            gacha: { interval: null, timeLeft: 0 },
-            trade: { interval: null, timeLeft: 0 }
+        // Python Kodundaki fruit_tiers Sözlüğü Birebir Aktarıldı
+        const fruitTiers = {
+            "Permanent Kitsune": 1,
+            "Permanent Dragon": 2,
+            "Dark Blade (Gamepass)": 3,
+            "Fruit Notifier (Gamepass)": 4,
+            "Permanent Leopard": 5,
+            "Fast Boats / 2x Money / 2x Mastery": 6,
+            "Kit (Kitsune)": 7,
+            "Dragon": 8,
+            "Leopard": 9,
+            "Magnet (Awakened / V2)": 10,
+            "Magnet (Yeni!)": 11,
+            "Dough": 12,
+            "T-Rex": 13,
+            "Mammoth": 14,
+            "Spirit": 15,
+            "Venom": 16,
+            "Control": 17,
+            "Shadow": 18,
+            "Gravity": 19,
+            "Portal": 20,
+            "Rumble": 21,
+            "Blizzard": 22,
+            "Buddha": 23,
+            "Sound": 24,
+            "Phoenix": 25,
+            "Spider": 26,
+            "Love": 27,
+            "Quake": 28,
+            "Magma": 29,
+            "Barrier": 30,
+            "Rubber": 31,
+            "Light": 32,
+            "Diamond": 33,
+            "Dark": 34,
+            "Sand": 35,
+            "Ice": 36,
+            "Falcon": 37,
+            "Flame": 38,
+            "Spring": 39,
+            "Bomb": 40,
+            "Smoke": 41,
+            "Spin": 42,
+            "Chop": 43,
+            "Kilo / Spike": 44
         };
 
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission();
+        // Select Kutularını Doldurma
+        function initDropdowns() {
+            const mySelect = document.getElementById('myFruit');
+            const targetSelect = document.getElementById('targetFruit');
+            
+            for (let fruit of Object.keys(fruitTiers)) {
+                mySelect.add(new Option(fruit, fruit));
+                targetSelect.add(new Option(fruit, fruit));
+            }
+            // Varsayılan farklı seçimler atayalım
+            mySelect.value = "Dragon";
+            targetSelect.value = "Portal";
+            calculateTrade();
         }
 
-        function updateDisplay(type) {
-            let totalSeconds = timers[type].timeLeft;
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
+        // Python calculate_trade fonksiyonunun birebir JS karşılığı
+        function calculateTrade() {
+            const myFruit = document.getElementById('myFruit').value;
+            const targetFruit = document.getElementById('targetFruit').value;
+            
+            const myTier = fruitTiers[myFruit] !== undefined ? fruitTiers[myFruit] : 20;
+            const targetTier = fruitTiers[targetFruit] !== undefined ? fruitTiers[targetFruit] : 20;
+            
+            const tierDiff = myTier - targetTier;
+            
+            let report = [
+                `📦 Senin: ${myFruit} (Tier #${myTier})`,
+                `🎁 Karşı: ${targetFruit} (Tier #${targetTier})\n`
+            ];
+            
+            if (tierDiff === 0) {
+                report.push("⚖️ Adil Takas.");
+            } else if (tierDiff > 0) {
+                if (tierDiff >= 5) {
+                    report.push(`⚠️ DİKKAT (%40 SINIRI): +${tierDiff} fark, sistem engelleyebilir!`);
+                } else {
+                    report.push(`✅ KÂRLI! (+${tierDiff} kademe)`);
+                }
+            } else {
+                report.push(`❌ ZARAR! (-${Math.abs(tierDiff)} kademe)`);
+            }
+            
+            document.getElementById('calc-output').innerText = report.join("\n");
+        }
 
+        // Timer Mantığı
+        let timers = { gacha: { interval: null, timeLeft: 0 }, trade: { interval: null, timeLeft: 0 } };
+        if (Notification.permission !== "granted") Notification.requestPermission();
+
+        function updateDisplay(type) {
+            let total = timers[type].timeLeft;
             document.getElementById(type + 'Timer').innerText = 
-                String(hours).padStart(2, '0') + ":" +
-                String(minutes).padStart(2, '0') + ":" +
-                String(seconds).padStart(2, '0');
+                String(Math.floor(total / 3600)).padStart(2, '0') + ":" +
+                String(Math.floor((total % 3600) / 60)).padStart(2, '0') + ":" +
+                String(total % 60).padStart(2, '0');
         }
 
         function startTimer(type, seconds) {
             clearInterval(timers[type].interval);
             timers[type].timeLeft = seconds;
             updateDisplay(type);
-
             timers[type].interval = setInterval(() => {
-                if (timers[type].timeLeft > 0) {
-                    timers[type].timeLeft--;
-                    updateDisplay(type);
+                if (timers[type].timeLeft > 0) { 
+                    timers[type].timeLeft--; 
+                    updateDisplay(type); 
                 } else {
                     clearInterval(timers[type].interval);
-                    let title = type === 'gacha' ? "🍋 Gacha Vakti!" : "🔄 Trade Vakti!";
-                    let msg = type === 'gacha' ? "Süre doldu, hemen gacha aç!" : "Takas süren sıfırlandı, işlem yapabilirsin!";
-                    
-                    alert(title + " " + msg);
-                    if (Notification.permission === "granted") {
-                        new Notification(title, { body: msg });
-                    }
+                    let title = type === 'gacha' ? "🎰 Gacha Vakti!" : "⏱️ Süre Doldu!";
+                    if (Notification.permission === "granted") new Notification(title, { body: "Takip süren tamamlandı!" });
                 }
             }, 1000);
         }
+
+        window.onload = initDropdowns;
     </script>
 </body>
 </html>
